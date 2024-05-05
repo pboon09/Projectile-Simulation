@@ -1,0 +1,4 @@
+tkinter==0.1.0
+Pillow==9.3.0
+matplotlib==3.6.2
+numpy==1.23.3
