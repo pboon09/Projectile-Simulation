@@ -1,0 +1,1 @@
+plt.savefig("Picture\EmptyTarjectory.png")
