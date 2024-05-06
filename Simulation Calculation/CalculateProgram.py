@@ -7,8 +7,8 @@ from TrajectoryPathGenerator import *
 from TargetGenerator import *
 
 def FindHorizontalSetting(Y_Deg, input_target_x, base_target_distance, luncher_lenght, triangle_side_length):
-    input_target_x = input_target_x - triangle_side_length/2
-    adjustable_range = luncher_lenght * math.cos(math.radians(Y_Deg))
+    input_target_x = input_target_x - triangle_side_length/2 
+    adjustable_range =luncher_lenght - (luncher_lenght * math.cos(math.radians(Y_Deg)))
     target_distance = base_target_distance + adjustable_range
     
     if target_distance <= 0:
@@ -19,38 +19,56 @@ def FindHorizontalSetting(Y_Deg, input_target_x, base_target_distance, luncher_l
     smallest_error = float('inf')
     best_X_Deg = None
 
-    theta = -30
-    while theta <= 30:
+    theta = -21
+    while theta <= 21:
         error = abs(theta - Perfect_X_Deg)
         if error < smallest_error:
             smallest_error = error  
             best_X_Deg = theta
 
-        if -10 <= theta < 10:
-            theta += 1
-        else:
-            theta += 5
+        theta+=3
 
     
     return best_X_Deg, Perfect_X_Deg
 
-def GenerateAllPossibleTrajectory(base_target_distance, base_target_height, base_wall_distance, base_wall_height, luncher_lenght, json_file_path):
+def GenerateAllPossibleTrajectory(base_target_distance, base_target_height, base_wall_distance, base_wall_height, luncher_lenght,Pressure, json_file_path):
     results = []
-    for theta in range(1,90):
-        adjustable_height = luncher_lenght * math.sin(math.radians(theta))
-        target_height = base_target_height - adjustable_height
-        wall_height = base_wall_height - adjustable_height
+    u_bar=[3.646,5.605,6.225,6.528,6.650,6.763]
+    bar=1
+    for bar in range(1,7) :
+        if(bar==1):      u=u_bar[0]
+        elif(bar==2):    u=u_bar[1]
+        elif(bar==3):    u=u_bar[2]
+        elif(bar==4):    u=u_bar[3]
+        elif(bar==5):    u=u_bar[4]
+        elif(bar==6):    u=u_bar[5]
+        for theta in range(24,61):
+         adjustable_height = luncher_lenght * math.sin(math.radians(theta))
+         target_height = base_target_height - adjustable_height
+         wall_height = base_wall_height - adjustable_height
 
-        adjustable_range = luncher_lenght * math.cos(math.radians(theta))
-        target_distance = base_target_distance + adjustable_range
-        wall_distance = base_wall_distance + adjustable_range
+         adjustable_range = luncher_lenght - (luncher_lenght * math.cos(math.radians(theta)))
+         target_distance = base_target_distance + adjustable_range
+         wall_distance = base_wall_distance + adjustable_range
+         
 
-        u = calculate_initial_velocity(theta, target_distance, target_height)
-        tof = calculate_time_of_flight(u, theta, target_distance)
-        trh = calculate_time_to_reach_height(u, theta, target_height)
-        collide = check_wall_collision(theta, u, wall_distance, wall_height)
-        hit = check_max_height(theta, u)
-        if u is not None and not collide:
+        #  u = calculate_initial_velocity(theta, target_distance, target_height)
+         print(type(u))
+         print(u)
+         
+         
+         tof = calculate_time_of_flight(u, theta, target_distance)
+         trh = calculate_time_to_reach_height(u, theta, target_height)
+         if(not (trh)):  
+            print("a")
+            continue
+
+         print(type(tof))
+         print(type(trh),'\n')
+
+         collide = check_wall_collision(theta, u, wall_distance, wall_height)
+         hit = check_max_height(theta, u)
+         if u is not None and not collide:
             results.append({
                 "theta": theta,
                 "initial_velocity": u,
@@ -60,10 +78,12 @@ def GenerateAllPossibleTrajectory(base_target_distance, base_target_height, base
                 "max_height": hit,
                 "target_height": target_height,
                 "adjustable_height": adjustable_height,
-                "adjustable_range": adjustable_range
+                "adjustable_range": adjustable_range,
+                "Bar": bar
+            
             })
-    with open(json_file_path, 'w') as f:
-        json.dump(results, f, indent=4)
+        with open(json_file_path, 'w') as f:
+         json.dump(results, f, indent=4)
     # print("Generated all possible trajectory data Done")
 
 def FindVerticalSetting(json_file_path, input_target_y):
@@ -90,7 +110,7 @@ def FindVerticalSetting(json_file_path, input_target_y):
                 smallest_error = combined_error
                 Perfect_Y_Deg = trajectory['theta']
 
-    valid_thetas = [25, 30, 35, 40, 45, 50, 55, 60]
+    valid_thetas = [24,27,30,33,36,39,42,45,48,51,54,57,60]
     best_Y_Deg = min(valid_thetas, key=lambda x: abs(x - Perfect_Y_Deg))
 
     return best_Y_Deg, Perfect_Y_Deg
@@ -116,8 +136,8 @@ def Calculate(X_Target, Y_Target):
     input_target_y =  y/100 + table
     input_target_x = x/100 
     luncher_lenght = 0.3
-
-    GenerateAllPossibleTrajectory(target_distance, input_target_y, wall_distance, wall_height, luncher_lenght, 'Simulation Calculation\TrajectoryDataBase.json')
+    Pressure=5.0
+    GenerateAllPossibleTrajectory(target_distance, input_target_y, wall_distance, wall_height, luncher_lenght,Pressure, 'Simulation Calculation\TrajectoryDataBase.json')
     Y_Deg, Perfect_Y_Deg = FindVerticalSetting('Simulation Calculation\TrajectoryDataBase.json', input_target_y)
     X_Deg, Perfect_X_Deg = FindHorizontalSetting(Y_Deg, input_target_x, target_distance, luncher_lenght, triangle_side_length)
 
@@ -159,15 +179,16 @@ def Calculate(X_Target, Y_Target):
     trajectory_data = [{
         "theta": Y_Deg,
         # "v0": calculate_initial_velocity(Y_Deg, target_distance, tgh),
-        "v0": target_speed,
-        "y0": luncher_lenght * math.sin(math.radians(Y_Deg)),
-        "x0": -luncher_lenght * math.cos(math.radians(Y_Deg))
+        "v0": target_speed, 
+        # "v0": 5.887, 
+        "y0": luncher_lenght * math.sin(math.radians(Y_Deg)),#ไม่แก้
+        "x0": -luncher_lenght * math.cos(math.radians(Y_Deg))#ไม่แก้
     }]
 
     position_data = [{
         "x": (math.tan(math.radians(X_Deg)) * (target_distance + (luncher_lenght * math.cos(math.radians(Y_Deg))))) + triangle_side_length/2,
         "y": tgh + luncher_lenght * math.sin(math.radians(Y_Deg)) - table,
-        "diameter": squash_ball_diameter
+        "diameter": squash_ball_diameter #ไม่แก้
     }]
 
     with open('Simulation Calculation\\TrajectoryPath.json', 'w') as file:
@@ -182,7 +203,8 @@ def Calculate(X_Target, Y_Target):
     plot_Path_view(target_distance, input_target_y, circle_diameter, 'Simulation Calculation\TrajectoryPath.json')
     plt.savefig('Picture\Trajectory.png')
 
-    Pressure = 6
+
+    # Pressure=5
     
     # plt.show()
     return X_Deg, Y_Deg, Pressure
