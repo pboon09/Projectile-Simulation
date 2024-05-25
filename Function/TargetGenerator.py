@@ -50,7 +50,8 @@ def plot_Target_view(side_length_m, target_center_x_m, target_center_y_m, target
 
     center, radius = generate_circle(ax, target_center_x_cm, target_center_y_cm, target_diameter_cm)
     if not is_circle_in_triangle(center, radius, vertices):
-            return -1
+            print("Not in triangle")
+            return False
 
     with open(json_file_path, 'r') as file:
         black_positions = json.load(file)
@@ -72,3 +73,6 @@ def plot_Target_view(side_length_m, target_center_x_m, target_center_y_m, target
     ax.set_title('Target View')
     ax.set_xlabel('Z coordinate (cm)')
     ax.set_ylabel('Y coordinate (cm)')
+
+    print("Plotting target view Done")
+    return True

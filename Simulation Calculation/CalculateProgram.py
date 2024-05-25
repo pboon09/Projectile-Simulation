@@ -136,7 +136,9 @@ def Calculate(X_Target, Y_Target):
     input_target_y =  y/100 + table
     input_target_x = x/100 
     luncher_lenght = 0.3
+
     Pressure=5.0
+
     GenerateAllPossibleTrajectory(target_distance, input_target_y, wall_distance, wall_height, luncher_lenght,Pressure, 'Simulation Calculation\TrajectoryDataBase.json')
     Y_Deg, Perfect_Y_Deg = FindVerticalSetting('Simulation Calculation\TrajectoryDataBase.json', input_target_y)
     X_Deg, Perfect_X_Deg = FindHorizontalSetting(Y_Deg, input_target_x, target_distance, luncher_lenght, triangle_side_length)
@@ -197,7 +199,7 @@ def Calculate(X_Target, Y_Target):
     with open('Simulation Calculation\\SquashBall_Pos.json', 'w') as file:
         json.dump(position_data, file, indent=4)
 
-    plot_Target_view(triangle_side_length, input_target_x, input_target_y - table, circle_diameter, 'Simulation Calculation\SquashBall_Pos.json')
+    TargetInside = plot_Target_view(triangle_side_length, input_target_x, input_target_y - table, circle_diameter, 'Simulation Calculation\SquashBall_Pos.json')
     plt.savefig('Picture\Target.png')
 
     plot_Path_view(target_distance, input_target_y, circle_diameter, 'Simulation Calculation\TrajectoryPath.json')
@@ -207,4 +209,4 @@ def Calculate(X_Target, Y_Target):
     # Pressure=5
     
     # plt.show()
-    return X_Deg, Y_Deg
+    return X_Deg, Y_Deg, TargetInside
