@@ -1,0 +1,43 @@
+{
+    "buttons": {
+        "page_one": [
+            {"name": "Calculate", "coords": [111, 606, 265, 652]},
+            {"name": "Reset", "coords": [348, 609, 507, 652]},
+            {"name": "Manual", "coords": [1113, 11, 1162, 68]}
+        ],
+        "page_two": [
+            {"name": "Next", "coords": [793, 572, 946, 613]},
+            {"name": "Home", "coords": [1113, 11, 1162, 68]}
+        ],
+        "page_three": [
+            {"name": "Back", "coords": [672, 572, 824, 618]},
+            {"name": "Done", "coords": [908, 573, 1068, 616]},
+            {"name": "Home", "coords": [1113, 11, 1162, 68]}
+        ]
+    },
+    "text_areas": {
+        "page_one": [
+            {"name": "Pitch", "coords": [760, 475, 980, 510]},
+            {"name": "Yaw", "coords": [760, 593, 980, 617]}
+        ]
+    },
+    "text_boxes": {
+        "page_one": [
+            {"name": "Z_Target", "coords": [220, 454, 490, 494]},
+            {"name": "Y_Target", "coords": [220, 530, 490, 570]}
+        ]
+    },
+    "images": {
+        "page_one": {
+            "main": "Picture/GUI_Page/LandingPage.png",
+            "additional_1": "Picture/EmptyTarjectory.png",
+            "additional_2": "Picture/EmptyTarget.png"
+        },
+        "page_two": {
+            "main": "Picture/GUI_Page/Manual1.png"
+        },
+        "page_three": {
+            "main": "Picture/GUI_Page/Manual2.png"
+        }
+    }
+}

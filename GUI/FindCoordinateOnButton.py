@@ -15,7 +15,7 @@ def resize_image(image, max_width, max_height):
     ratio = min(max_width/original_width, max_height/original_height)
     new_width = int(original_width * ratio)
     new_height = int(original_height * ratio)
-    resized_image = image.resize((new_width, new_height), Image.ANTIALIAS)
+    resized_image = image.resize((new_width, new_height), Image.LANCZOS)
     return resized_image
 
 root = tk.Tk()

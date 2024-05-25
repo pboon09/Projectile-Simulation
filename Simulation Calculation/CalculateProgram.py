@@ -6,167 +6,90 @@ from ProjectileFunction import *
 from TrajectoryPathGenerator import *
 from TargetGenerator import *
 
-def FindHorizontalSetting(Y_Deg, input_target_x, base_target_distance, luncher_lenght, triangle_side_length):
-    input_target_x = input_target_x - triangle_side_length/2
-    adjustable_range = luncher_lenght * math.cos(math.radians(Y_Deg))
+def FindPitch(Pitch_min, Pitch_max, Pitch_step, yaw, input_target_z, base_target_distance, luncher_length, triangle_side_length):
+    target_z = input_target_z - triangle_side_length/2
+    adjustable_range = luncher_length * math.cos(math.radians(yaw))
     target_distance = base_target_distance + adjustable_range
-    
-    if target_distance <= 0:
-        raise ValueError("Target distance must be positive")
 
-    Perfect_X_Deg = math.degrees(math.atan(input_target_x / target_distance))
-    
+    perfect_pitch = math.degrees(math.atan(target_z / target_distance))
+
     smallest_error = float('inf')
-    best_X_Deg = None
+    pitch = None
 
-    theta = -30
-    while theta <= 30:
-        error = abs(theta - Perfect_X_Deg)
+    for theta in range(Pitch_min, Pitch_max + 1, Pitch_step):
+        error = abs(theta - perfect_pitch)
         if error < smallest_error:
             smallest_error = error  
-            best_X_Deg = theta
+            pitch = theta
 
-        if -10 <= theta < 10:
-            theta += 1
-        else:
-            theta += 5
+    return pitch
 
+def FindYaw(Yaw_min, Yaw_max, Yaw_step, base_target_distance, base_target_height, base_wall_distance, base_wall_height, luncher_length, luncher_base_height, velocity):
+    min_error = float('inf')
+    yaw = None
     
-    return best_X_Deg, Perfect_X_Deg
+    for theta in range(Yaw_min, Yaw_max + 1, Yaw_step):
+        adjustable_height = luncher_length * math.sin(math.radians(theta))
+        target_height = base_target_height - adjustable_height - luncher_base_height
 
-def GenerateAllPossibleTrajectory(base_target_distance, base_target_height, base_wall_distance, base_wall_height, luncher_lenght, json_file_path):
-    results = []
-    for theta in range(1,90):
-        adjustable_height = luncher_lenght * math.sin(math.radians(theta))
-        target_height = base_target_height - adjustable_height
-        wall_height = base_wall_height - adjustable_height
-
-        adjustable_range = luncher_lenght * math.cos(math.radians(theta))
+        adjustable_range = luncher_length * math.cos(math.radians(theta))
         target_distance = base_target_distance + adjustable_range
-        wall_distance = base_wall_distance + adjustable_range
 
-        u = calculate_initial_velocity(theta, target_distance, target_height)
-        tof = calculate_time_of_flight(u, theta, target_distance)
-        trh = calculate_time_to_reach_height(u, theta, target_height)
-        collide = check_wall_collision(theta, u, wall_distance, wall_height)
-        hit = check_max_height(theta, u)
-        if u is not None and not collide:
-            results.append({
-                "theta": theta,
-                "initial_velocity": u,
-                "time_of_flight": tof,
-                "time_to_reach_height": trh,
-                "collision": collide,
-                "max_height": hit,
-                "target_height": target_height,
-                "adjustable_height": adjustable_height,
-                "adjustable_range": adjustable_range
-            })
-    with open(json_file_path, 'w') as f:
-        json.dump(results, f, indent=4)
-    # print("Generated all possible trajectory data Done")
-
-def FindVerticalSetting(json_file_path, input_target_y):
-    with open(json_file_path, 'r') as file:
-        trajectories = json.load(file)
-    
-    smallest_error = float('inf')
-    best_Y_Deg = None
-    Perfect_Y_Deg = None
-
-    for trajectory in trajectories:
-        theta = trajectory['theta']
-        tof = trajectory['time_of_flight']
-        trh = trajectory['time_to_reach_height']
-        target_height = trajectory['target_height']
-        collide = trajectory['collision']
+        tof = calculate_time_of_flight(velocity, theta, target_distance)
+        hat = calculate_height_at_time(velocity, theta, tof)
         
-        if not collide:
-            time_difference = abs(tof - trh)
-            height_difference = abs(input_target_y - target_height)
-            combined_error = time_difference + height_difference
-            
-            if combined_error < smallest_error:
-                smallest_error = combined_error
-                Perfect_Y_Deg = trajectory['theta']
+        error = abs(hat - target_height)
+        if error < min_error:
+            min_error = error
+            yaw = theta
 
-    valid_thetas = [25, 30, 35, 40, 45, 50, 55, 60]
-    best_Y_Deg = min(valid_thetas, key=lambda x: abs(x - Perfect_Y_Deg))
+    return yaw
 
-    return best_Y_Deg, Perfect_Y_Deg
-
-def Calculate(X_Target, Y_Target):
-    # Input from user (cm) [measure from bottom left corner]
-    # x = 15
-    # y = 6.85
-
-    x = X_Target
+def Calculate(Z_Target, Y_Target):
+    z = Z_Target
     y = Y_Target
 
     # Constants (m)
-    target_distance = 2
-    wall_distance = 1
-    wall_height = 60/100
-    triangle_side_length = 0.5
-    circle_diameter = 0.137
-    squash_ball_diameter = 0.04
-    table = 75.5/100
+    with open('Simulation Calculation\\config.json', 'r') as config_file:
+        config = json.load(config_file)
+
+    luncher_length = config["luncher_parameters"]["luncher_length"]
+    luncher_baseHight = config["luncher_parameters"]["luncher_baseHight"]
+    velocity = config["luncher_parameters"]["velocity"]
+    Pitch_min = config["luncher_parameters"]["Pitch_min"]
+    Pitch_max = config["luncher_parameters"]["Pitch_max"]
+    Pitch_step = config["luncher_parameters"]["Pitch_step"]
+    Yaw_min = config["luncher_parameters"]["Yaw_min"]
+    Yaw_max = config["luncher_parameters"]["Yaw_max"]
+    Yaw_step = config["luncher_parameters"]["Yaw_step"]
+    table = config["field_parameters"]["table"]
+    target_distance = config["field_parameters"]["target_distance"]
+    wall_distance = config["field_parameters"]["wall_distance"]
+    wall_height = config["field_parameters"]["wall_height"]
+    triangle_side_length = config["target_parameters"]["triangle_side_length"]
+    circle_diameter = config["target_parameters"]["circle_diameter"]
+    squash_ball_diameter = config["target_parameters"]["squash_ball_diameter"]
 
     # Input for program (m)
+    input_target_z = z/100 
     input_target_y =  y/100 + table
-    input_target_x = x/100 
-    luncher_lenght = 0.3
 
-    GenerateAllPossibleTrajectory(target_distance, input_target_y, wall_distance, wall_height, luncher_lenght, 'Simulation Calculation\TrajectoryDataBase.json')
-    Y_Deg, Perfect_Y_Deg = FindVerticalSetting('Simulation Calculation\TrajectoryDataBase.json', input_target_y)
-    X_Deg, Perfect_X_Deg = FindHorizontalSetting(Y_Deg, input_target_x, target_distance, luncher_lenght, triangle_side_length)
-
-    #Output for User
-    print(f"X Degree: {X_Deg}, Y Degree: {Y_Deg}, Perfect X Degree: {round(Perfect_X_Deg,2)}, Perfect Y Degree: {Perfect_Y_Deg}")
-
-    with open('Simulation Calculation\TrajectoryDataBase.json', 'r') as file:
-        trajectories = json.load(file)
-
-    for trajectory in trajectories:
-        theta_data = trajectory['theta']
-        if theta_data == Y_Deg:
-            tgh = trajectory['target_height']
-            target_speed = trajectory['initial_velocity']
-
-    #edit herez
-    # pressure_to_velocity = {
-    #     6: 6.111,
-    #     5: 6.019,
-    #     4: 5.887,
-    #     3: 5.646,
-    #     2: 5.048,
-    #     1: 2.948
-    # }
-    
-    # Pressure = None
-    # velo = None
-    # smallest_difference = float('inf')
-    
-    # for p, velocity in pressure_to_velocity.items():
-    #     difference = abs(velocity - target_speed)
-        
-    #     if difference < smallest_difference:
-    #         smallest_difference = difference
-    #         Pressure = p
-    #         velo = velocity
+    Yaw = FindYaw(Yaw_min, Yaw_max, Yaw_step, target_distance, input_target_y, wall_distance, wall_height, luncher_length, luncher_baseHight, velocity)
+    Pitch = FindPitch(Pitch_min, Pitch_max, Pitch_step, Yaw, input_target_z, target_distance, luncher_length, triangle_side_length)
 
     #Input for plotting
     trajectory_data = [{
-        "theta": Y_Deg,
-        # "v0": calculate_initial_velocity(Y_Deg, target_distance, tgh),
-        "v0": target_speed,
-        "y0": luncher_lenght * math.sin(math.radians(Y_Deg)),
-        "x0": -luncher_lenght * math.cos(math.radians(Y_Deg))
+        "theta": Yaw,
+        "v0": velocity, 
+        "y0": luncher_length * math.sin(math.radians(Yaw)) + luncher_baseHight,
+        "x0": -luncher_length * math.cos(math.radians(Yaw))
     }]
 
+    tgh = calculate_height_at_time(velocity, Yaw, calculate_time_of_flight(velocity, Yaw, target_distance))
+
     position_data = [{
-        "x": (math.tan(math.radians(X_Deg)) * (target_distance + (luncher_lenght * math.cos(math.radians(Y_Deg))))) + triangle_side_length/2,
-        "y": tgh + luncher_lenght * math.sin(math.radians(Y_Deg)) - table,
+        "z": (math.sin(math.radians(Pitch)) * (target_distance + (luncher_length * math.cos(math.radians(Pitch))))) + triangle_side_length/2,
+        "y": tgh + luncher_length * math.sin(math.radians(Yaw)) + luncher_baseHight - table,
         "diameter": squash_ball_diameter
     }]
 
@@ -176,13 +99,11 @@ def Calculate(X_Target, Y_Target):
     with open('Simulation Calculation\\SquashBall_Pos.json', 'w') as file:
         json.dump(position_data, file, indent=4)
 
-    plot_Target_view(triangle_side_length, input_target_x, input_target_y - table, circle_diameter, 'Simulation Calculation\SquashBall_Pos.json')
-    plt.savefig('Picture\Target.png')
+    TargetInside = plot_Target_view(triangle_side_length, input_target_z, input_target_y - table, circle_diameter, 'Simulation Calculation\\SquashBall_Pos.json')
+    plt.savefig('Picture\\Target.png')
 
-    plot_Path_view(target_distance, input_target_y, circle_diameter, 'Simulation Calculation\TrajectoryPath.json')
-    plt.savefig('Picture\Trajectory.png')
+    plot_Path_view(target_distance, input_target_y, circle_diameter, 'Simulation Calculation\\TrajectoryPath.json')
+    plt.savefig('Picture\\Trajectory.png')
 
-    Pressure = 6
-    
-    # plt.show()
-    return X_Deg, Y_Deg, Pressure
+    # # plt.show()
+    return Pitch, Yaw, TargetInside
