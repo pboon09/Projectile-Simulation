@@ -15,17 +15,17 @@ def generate_triangle(ax, side_length):
     ax.fill(triangle_x, triangle_y, 'orange', alpha=0.5)
     return [(x0, y0), (x1, y1), (x2, y2)]
 
-def generate_circle(ax, center_x, center_y, diameter):
+def generate_circle(ax, center_z, center_y, diameter):
     radius = diameter / 2
-    circle = plt.Circle((center_x, center_y), radius, color='white', fill=True)
+    circle = plt.Circle((center_z, center_y), radius, color='white', fill=True)
     ax.add_patch(circle)
-    return (center_x, center_y), radius
+    return (center_z, center_y), radius
 
-def generate_black_circle(ax, center_x, center_y, diameter):
+def generate_black_circle(ax, center_z, center_y, diameter):
     radius = diameter / 2
-    black_circle = plt.Circle((center_x, center_y), radius, color='black', fill=True)
+    black_circle = plt.Circle((center_z, center_y), radius, color='black', fill=True)
     ax.add_patch(black_circle)
-    return (center_x, center_y), radius
+    return (center_z, center_y), radius
 
 def is_circle_in_triangle(center, radius, vertices):
     for i in range(3):
@@ -36,9 +36,9 @@ def is_circle_in_triangle(center, radius, vertices):
             return False
     return True
 
-def plot_Target_view(side_length_m, target_center_x_m, target_center_y_m, target_diameter_m, json_file_path):
+def plot_Target_view(side_length_m, target_center_z_m, target_center_y_m, target_diameter_m, json_file_path):
     side_length_cm = round(side_length_m * 100, 2)
-    target_center_x_cm = round(target_center_x_m * 100,2)
+    target_center_z_cm = round(target_center_z_m * 100,2)
     target_center_y_cm = round(target_center_y_m * 100,2)
     target_diameter_cm = round(target_diameter_m * 100,2)
 
@@ -48,7 +48,7 @@ def plot_Target_view(side_length_m, target_center_x_m, target_center_y_m, target
     fig, ax = plt.subplots(figsize=(size_in_inches, size_in_inches), dpi=dpi)
     vertices = generate_triangle(ax, side_length_cm)
 
-    center, radius = generate_circle(ax, target_center_x_cm, target_center_y_cm, target_diameter_cm)
+    center, radius = generate_circle(ax, target_center_z_cm, target_center_y_cm, target_diameter_cm)
     if not is_circle_in_triangle(center, radius, vertices):
             print("Not in triangle")
             return False
@@ -57,14 +57,14 @@ def plot_Target_view(side_length_m, target_center_x_m, target_center_y_m, target
         black_positions = json.load(file)
 
     for position in black_positions:
-        black_center_x_cm = position['x'] * 100
+        black_center_z_cm = position['x'] * 100
         black_center_y_cm = position['y'] * 100 
         black_diameter_cm = position['diameter'] * 100 
-        black_center, black_radius = generate_black_circle(ax, black_center_x_cm, black_center_y_cm, black_diameter_cm)
-        center2, radius2 = generate_circle(ax, black_center_x_cm, black_center_y_cm, 0.1)
+        black_center, black_radius = generate_black_circle(ax, black_center_z_cm, black_center_y_cm, black_diameter_cm)
+        center2, radius2 = generate_circle(ax, black_center_z_cm, black_center_y_cm, 0.1)
         
         # if not is_circle_in_triangle(black_center, black_radius, vertices):
-        #     raise ValueError(f"The squash ball at ({black_center_x_cm}, {black_center_y_cm}) will not hit this triangle")
+        #     raise ValueError(f"The squash ball at ({black_center_z_cm}, {black_center_y_cm}) will not hit this triangle")
 
     ax.set_xlim(0, side_length_cm)
     ax.set_ylim(0, (np.sqrt(3)/2) * side_length_cm)
