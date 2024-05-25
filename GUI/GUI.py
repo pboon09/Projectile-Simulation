@@ -168,9 +168,11 @@ class PageOne(Page):
         valid_y = self.validate_input(y_target_text)
 
         if valid_z is not True:
+            self.perform_reset()
             self.warning_label_z.config(text=valid_z)
             return
         if valid_y is not True:
+            self.perform_reset()
             self.warning_label_y.config(text=valid_y)
             return
 

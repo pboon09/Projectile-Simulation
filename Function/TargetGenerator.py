@@ -28,12 +28,32 @@ def generate_black_circle(ax, center_z, center_y, diameter):
     return (center_z, center_y), radius
 
 def is_circle_in_triangle(center, radius, vertices):
+    def point_in_triangle(pt, v1, v2, v3):
+        # Using barycentric coordinates to determine if point is inside the triangle
+        d1 = sign(pt, v1, v2)
+        d2 = sign(pt, v2, v3)
+        d3 = sign(pt, v3, v1)
+        has_neg = (d1 < 0) or (d2 < 0) or (d3 < 0)
+        has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
+        return not (has_neg and has_pos)
+
+    def sign(p1, p2, p3):
+        return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
+
     for i in range(3):
         p1 = vertices[i]
         p2 = vertices[(i + 1) % 3]
         d = np.abs(np.cross(np.subtract(p2, p1), np.subtract(p1, center)) / np.linalg.norm(np.subtract(p2, p1)))
         if d < radius:
             return False
+
+    # Check if all circle points are inside the triangle
+    step_angle = np.pi / 4  # Check 8 points around the circle
+    for angle in np.arange(0, 2 * np.pi, step_angle):
+        edge_point = (center[0] + radius * np.cos(angle), center[1] + radius * np.sin(angle))
+        if not point_in_triangle(edge_point, *vertices):
+            return False
+
     return True
 
 def plot_Target_view(side_length_m, target_center_z_m, target_center_y_m, target_diameter_m, json_file_path):
@@ -57,7 +77,7 @@ def plot_Target_view(side_length_m, target_center_z_m, target_center_y_m, target
         black_positions = json.load(file)
 
     for position in black_positions:
-        black_center_z_cm = position['x'] * 100
+        black_center_z_cm = position['z'] * 100
         black_center_y_cm = position['y'] * 100 
         black_diameter_cm = position['diameter'] * 100 
         black_center, black_radius = generate_black_circle(ax, black_center_z_cm, black_center_y_cm, black_diameter_cm)
