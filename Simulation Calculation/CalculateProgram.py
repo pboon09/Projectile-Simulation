@@ -6,7 +6,7 @@ from ProjectileFunction import *
 from TrajectoryPathGenerator import *
 from TargetGenerator import *
 
-def FindPitch(yaw, input_target_z, base_target_distance, luncher_length, triangle_side_length):
+def FindPitch(Pitch_min, Pitch_max, Pitch_step, yaw, input_target_z, base_target_distance, luncher_length, triangle_side_length):
     target_z = input_target_z - triangle_side_length/2
     adjustable_range = luncher_length * math.cos(math.radians(yaw))
     target_distance = base_target_distance + adjustable_range
@@ -16,7 +16,7 @@ def FindPitch(yaw, input_target_z, base_target_distance, luncher_length, triangl
     smallest_error = float('inf')
     pitch = None
 
-    for theta in range(-21, 21, 3):
+    for theta in range(Pitch_min, Pitch_max + 1, Pitch_step):
         error = abs(theta - perfect_pitch)
         if error < smallest_error:
             smallest_error = error  
@@ -24,11 +24,11 @@ def FindPitch(yaw, input_target_z, base_target_distance, luncher_length, triangl
 
     return pitch
 
-def FindYaw(base_target_distance, base_target_height, base_wall_distance, base_wall_height, luncher_length, luncher_base_height, velocity):
+def FindYaw(Yaw_min, Yaw_max, Yaw_step, base_target_distance, base_target_height, base_wall_distance, base_wall_height, luncher_length, luncher_base_height, velocity):
     min_error = float('inf')
     yaw = None
     
-    for theta in range(24, 61, 3):
+    for theta in range(Yaw_min, Yaw_max + 1, Yaw_step):
         adjustable_height = luncher_length * math.sin(math.radians(theta))
         target_height = base_target_height - adjustable_height - luncher_base_height
 
@@ -56,6 +56,12 @@ def Calculate(Z_Target, Y_Target):
     luncher_length = config["luncher_parameters"]["luncher_length"]
     luncher_baseHight = config["luncher_parameters"]["luncher_baseHight"]
     velocity = config["luncher_parameters"]["velocity"]
+    Pitch_min = config["luncher_parameters"]["Pitch_min"]
+    Pitch_max = config["luncher_parameters"]["Pitch_max"]
+    Pitch_step = config["luncher_parameters"]["Pitch_step"]
+    Yaw_min = config["luncher_parameters"]["Yaw_min"]
+    Yaw_max = config["luncher_parameters"]["Yaw_max"]
+    Yaw_step = config["luncher_parameters"]["Yaw_step"]
     table = config["field_parameters"]["table"]
     target_distance = config["field_parameters"]["target_distance"]
     wall_distance = config["field_parameters"]["wall_distance"]
@@ -68,8 +74,8 @@ def Calculate(Z_Target, Y_Target):
     input_target_z = z/100 
     input_target_y =  y/100 + table
 
-    Yaw = FindYaw(target_distance, input_target_y, wall_distance, wall_height, luncher_length, luncher_baseHight, velocity)
-    Pitch = FindPitch(Yaw, input_target_z, target_distance, luncher_length, triangle_side_length)
+    Yaw = FindYaw(Yaw_min, Yaw_max, Yaw_step, target_distance, input_target_y, wall_distance, wall_height, luncher_length, luncher_baseHight, velocity)
+    Pitch = FindPitch(Pitch_min, Pitch_max, Pitch_step, Yaw, input_target_z, target_distance, luncher_length, triangle_side_length)
 
     #Input for plotting
     trajectory_data = [{

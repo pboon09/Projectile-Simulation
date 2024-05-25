@@ -2,7 +2,13 @@
     "luncher_parameters": {
         "luncher_length": 0.3,
         "luncher_baseHight": 0.07,
-        "velocity": 6
+        "velocity": 6.7,
+        "Pitch_min": -21,
+        "Pitch_max": 21,
+        "Pitch_step": 3,        
+        "Yaw_min": 24,
+        "Yaw_max": 60,
+        "Yaw_step": 3
     },
     "field_parameters": {
         "table": 0.755,
