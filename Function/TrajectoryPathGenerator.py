@@ -1,6 +1,6 @@
-import matplotlib.pyplot as plt # type: ignore
-from matplotlib.patches import Circle # type: ignore
-import numpy as np # type: ignore
+import matplotlib.pyplot as plt
+from matplotlib.patches import Circle
+import numpy as np
 import json
 
 def projectile_motion(v0, theta, y0, x0, g=9.81):

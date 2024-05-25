@@ -1,3 +1,6 @@
+sys
+os
+json
 tkinter
 Pillow
 matplotlib

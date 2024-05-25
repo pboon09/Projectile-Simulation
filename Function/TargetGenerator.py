@@ -1,5 +1,5 @@
-import matplotlib.pyplot as plt # type: ignore
-import numpy as np # type: ignore
+import matplotlib.pyplot as plt
+import numpy as np
 import json
 
 def generate_triangle(ax, side_length):
