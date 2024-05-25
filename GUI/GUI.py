@@ -12,9 +12,9 @@ class App(tk.Tk):
         self.title("GRA163 Group 3 Simulation")
 
         # Load and resize images for each page
-        self.images = [self.load_image("Picture\GUI_Page\LandingPage.png"),
-                       self.load_image("Picture\GUI_Page\Manual1.png"),
-                       self.load_image("Picture\GUI_Page\Manual2.png")]
+        self.images = [self.load_image("Picture\\GUI_Page\\LandingPage.png"),
+                    self.load_image("Picture\\GUI_Page\\Manual1.png"),
+                    self.load_image("Picture\\GUI_Page\\Manual2.png")]
 
         # Initialize frames for each page
         self.frames = {}
@@ -37,8 +37,7 @@ class App(tk.Tk):
     def resize_image(self, image, max_width, max_height):
         ratio = min(max_width / image.width, max_height / image.height)
         new_size = (int(image.width * ratio), int(image.height * ratio))
-        return image.resize(new_size, Image.ANTIALIAS)
-
+        return image.resize(new_size, Image.LANCZOS)
 class Page(tk.Frame):
     def __init__(self, master, image, page_number):
         super().__init__(master)
@@ -77,9 +76,9 @@ class PageOne(Page):
 
         # Define text areas for labels
         self.text_areas = [
-            (790, 458, 1015, 490),   # X_Deg
-            (790, 535, 1015, 567),   # Y_Deg
-            (790, 612, 1015, 644)    # Pressure
+            (760, 475, 980, 510),   # Pitch
+            (760, 593, 980, 617)    # Yaw
+            # (790, 612, 1015, 644)    # Pressure
         ]
 
         # Create Label widgets for each area
@@ -92,7 +91,7 @@ class PageOne(Page):
 
         # Define text boxes
         text_box_areas = {
-            'text_box_1': (220, 454, 490, 494), # X_Target
+            'text_box_1': (220, 454, 490, 494), # Z_Target
             'text_box_2': (220, 530, 490, 570)  # Y_Target
         }
 
@@ -105,8 +104,8 @@ class PageOne(Page):
             self.text_boxes[key] = text_box
 
         # Add warning labels for X_Target and Y_Target with a white background
-        self.warning_label_x = tk.Label(self, font=("Helvetica", 8), fg='red', bg='white', text='', anchor='w')
-        self.warning_label_x.place(x=220, y=500, width=270, height=25)
+        self.warning_label_z = tk.Label(self, font=("Helvetica", 8), fg='red', bg='white', text='', anchor='w')
+        self.warning_label_z.place(x=220, y=500, width=270, height=25)
 
         self.warning_label_y = tk.Label(self, font=("Helvetica", 8), fg='red', bg='white', text='', anchor='w')
         self.warning_label_y.place(x=220, y=577, width=270, height=25)
@@ -129,7 +128,7 @@ class PageOne(Page):
         # Load the image
         img = Image.open(img_path).convert("RGBA")
         # Resize the image
-        img_resized = img.resize(size, Image.ANTIALIAS)
+        img_resized = img.resize(size, Image.LANCZOS)
 
         # If a radius is given, apply rounded corners
         if radius:
@@ -180,26 +179,26 @@ class PageOne(Page):
                 break
 
     def perform_calculate(self):
-        x_target_text = self.text_boxes['text_box_1'].get()
+        z_target_text = self.text_boxes['text_box_1'].get()
         y_target_text = self.text_boxes['text_box_2'].get()
         
         # Clear previous warnings
-        self.warning_label_x.config(text='')
+        self.warning_label_z.config(text='')
         self.warning_label_y.config(text='')
 
-        valid_x = self.validate_input(x_target_text)
+        valid_z = self.validate_input(z_target_text)
         valid_y = self.validate_input(y_target_text)
 
-        if not valid_x:
-            self.warning_label_x.config(text='Please input the number from x.xx cm to x.xx cm.')
+        if not valid_z:
+            self.warning_label_z.config(text='Please input the number from x.xx cm to x.xx cm.')
         if not valid_y:
             self.warning_label_y.config(text='Please input the number from x.xx cm to x.xx cm.')
 
-        if valid_x and valid_y:
-            x_deg, y_deg, pressure = Calculate(float(x_target_text), float(y_target_text))
-            self.text_labels[0].config(text=f"{x_deg:.2f}")  # X_Deg
-            self.text_labels[1].config(text=f"{y_deg:.2f}")  # Y_Deg
-            self.text_labels[2].config(text=f"{pressure}")  # Pressure
+        if valid_z and valid_y:
+            Pitch, Yaw = Calculate(float(z_target_text), float(y_target_text))
+            self.text_labels[0].config(text=f"{Pitch:.2f}")  # Pitch
+            self.text_labels[1].config(text=f"{Yaw:.2f}")  # Yaw
+            # self.text_labels[2].config(text=f"{pressure}")  # Pressure
 
             # Update images
             self.update_image('photo', 'canvas', 'Picture\\Trajectory.png', (30, 85), (787, 332), 30)
@@ -210,7 +209,7 @@ class PageOne(Page):
             label.config(text='')  # Clear the text
         for text_box in self.text_boxes.values():
             text_box.delete(0, 'end')  # Clear the text boxes
-        self.warning_label_x.config(text='')
+        self.warning_label_z.config(text='')
         self.warning_label_y.config(text='')
 
         # Use raw string for paths or replace with forward slashes
@@ -220,7 +219,7 @@ class PageOne(Page):
     def update_image(self, photo_attr_name, canvas_attr_name, img_path, position, size, radius):
         full_path = os.path.abspath(img_path)
         img = Image.open(full_path).convert("RGBA")
-        img_resized = self.round_corners(img.resize(size, Image.ANTIALIAS), radius)
+        img_resized = self.round_corners(img.resize(size, Image.LANCZOS), radius)
         setattr(self, photo_attr_name, ImageTk.PhotoImage(img_resized))
         canvas = getattr(self, canvas_attr_name)
         canvas.create_image(0, 0, anchor='nw', image=getattr(self, photo_attr_name))

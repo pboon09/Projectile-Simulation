@@ -207,4 +207,4 @@ def Calculate(X_Target, Y_Target):
     # Pressure=5
     
     # plt.show()
-    return X_Deg, Y_Deg, Pressure
+    return X_Deg, Y_Deg
