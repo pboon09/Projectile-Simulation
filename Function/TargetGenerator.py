@@ -15,16 +15,10 @@ def generate_triangle(ax, side_length):
     ax.fill(triangle_x, triangle_y, 'orange', alpha=0.5)
     return [(x0, y0), (x1, y1), (x2, y2)]
 
-def generate_circle(ax, center_z, center_y, diameter):
+def generate_circle(ax, center_z, center_y, diameter, color='white'):
     radius = diameter / 2
-    circle = plt.Circle((center_z, center_y), radius, color='white', fill=True)
+    circle = plt.Circle((center_z, center_y), radius, color=color, fill=True)
     ax.add_patch(circle)
-    return (center_z, center_y), radius
-
-def generate_black_circle(ax, center_z, center_y, diameter):
-    radius = diameter / 2
-    black_circle = plt.Circle((center_z, center_y), radius, color='black', fill=True)
-    ax.add_patch(black_circle)
     return (center_z, center_y), radius
 
 def is_circle_in_triangle(center, radius, vertices):
@@ -80,7 +74,7 @@ def plot_Target_view(side_length_m, target_center_z_m, target_center_y_m, target
         black_center_z_cm = position['z'] * 100
         black_center_y_cm = position['y'] * 100 
         black_diameter_cm = position['diameter'] * 100 
-        black_center, black_radius = generate_black_circle(ax, black_center_z_cm, black_center_y_cm, black_diameter_cm)
+        black_center, black_radius = generate_circle(ax, black_center_z_cm, black_center_y_cm, black_diameter_cm, 'black')
         center2, radius2 = generate_circle(ax, black_center_z_cm, black_center_y_cm, 0.1)
         
         # if not is_circle_in_triangle(black_center, black_radius, vertices):

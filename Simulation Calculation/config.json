@@ -2,7 +2,7 @@
     "luncher_parameters": {
         "luncher_length": 0.3,
         "luncher_baseHight": 0.07,
-        "velocity": 6.7,
+        "velocity": 6.5,
         "Pitch_min": -21,
         "Pitch_max": 21,
         "Pitch_step": 3,        

@@ -8,7 +8,7 @@ from TargetGenerator import *
 
 def FindPitch(Pitch_min, Pitch_max, Pitch_step, yaw, input_target_z, base_target_distance, luncher_length, triangle_side_length):
     target_z = input_target_z - triangle_side_length/2
-    adjustable_range = luncher_length * math.cos(math.radians(yaw))
+    adjustable_range = luncher_length - (luncher_length * math.cos(math.radians(yaw)))
     target_distance = base_target_distance + adjustable_range
 
     perfect_pitch = math.degrees(math.atan(target_z / target_distance))
@@ -24,24 +24,32 @@ def FindPitch(Pitch_min, Pitch_max, Pitch_step, yaw, input_target_z, base_target
 
     return pitch
 
-def FindYaw(Yaw_min, Yaw_max, Yaw_step, base_target_distance, base_target_height, base_wall_distance, base_wall_height, luncher_length, luncher_base_height, velocity):
+def FindYaw(Yaw_min, Yaw_max, Yaw_step, base_target_distance, base_target_height, base_wall_distance, base_wall_height, luncher_length, luncher_base_height, velocity, circle_diameter):
     min_error = float('inf')
     yaw = None
     
     for theta in range(Yaw_min, Yaw_max + 1, Yaw_step):
         adjustable_height = luncher_length * math.sin(math.radians(theta))
         target_height = base_target_height - adjustable_height - luncher_base_height
+        wall_height = base_wall_height - adjustable_height - luncher_base_height
 
-        adjustable_range = luncher_length * math.cos(math.radians(theta))
+        adjustable_range = luncher_length - (luncher_length * math.cos(math.radians(theta)))
         target_distance = base_target_distance + adjustable_range
+        wall_distance = base_wall_distance + adjustable_range
 
         tof = calculate_time_of_flight(velocity, theta, target_distance)
         hat = calculate_height_at_time(velocity, theta, tof)
+
+        UpperBound = target_height + circle_diameter/2
+        LowerBound = target_height - circle_diameter/2
+
+        HitWall = check_wall_collision(theta, velocity, wall_distance, wall_height)
         
-        error = abs(hat - target_height)
-        if error < min_error:
-            min_error = error
-            yaw = theta
+        if not HitWall and hat + 0.02 < UpperBound and hat - 0.02 > LowerBound:
+            error = abs(hat - target_height)
+            if error < min_error:
+                min_error = error
+                yaw = theta
 
     return yaw
 
@@ -74,7 +82,7 @@ def Calculate(Z_Target, Y_Target):
     input_target_z = z/100 
     input_target_y =  y/100 + table
 
-    Yaw = FindYaw(Yaw_min, Yaw_max, Yaw_step, target_distance, input_target_y, wall_distance, wall_height, luncher_length, luncher_baseHight, velocity)
+    Yaw = FindYaw(Yaw_min, Yaw_max, Yaw_step, target_distance, input_target_y, wall_distance, wall_height, luncher_length, luncher_baseHight, velocity, circle_diameter)
     Pitch = FindPitch(Pitch_min, Pitch_max, Pitch_step, Yaw, input_target_z, target_distance, luncher_length, triangle_side_length)
 
     #Input for plotting
@@ -82,7 +90,7 @@ def Calculate(Z_Target, Y_Target):
         "theta": Yaw,
         "v0": velocity, 
         "y0": luncher_length * math.sin(math.radians(Yaw)) + luncher_baseHight,
-        "x0": -luncher_length * math.cos(math.radians(Yaw))
+        "x0": -(luncher_length - luncher_length * math.cos(math.radians(Yaw)))
     }]
 
     tgh = calculate_height_at_time(velocity, Yaw, calculate_time_of_flight(velocity, Yaw, target_distance))
@@ -105,5 +113,5 @@ def Calculate(Z_Target, Y_Target):
     plot_Path_view(target_distance, input_target_y, circle_diameter, 'Simulation Calculation\\TrajectoryPath.json')
     plt.savefig('Picture\\Trajectory.png')
 
-    # # plt.show()
+    # plt.show()
     return Pitch, Yaw, TargetInside
