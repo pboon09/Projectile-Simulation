@@ -43,6 +43,12 @@ For each GUI page, the configuration can be specified as follows:
             {"name": "Y_Target", "coords": [220, 530, 490, 570]}
         ]
     },
+    "warning_labels": {
+        "page_one": [
+            {"name": "Z_Label","coords": [220, 500, 490, 525]},
+            {"name": "Y_Label","coords": [220, 577, 490, 602]}
+        ]
+    },
     "images": {
         "page_one": {
             "main": "Picture/GUI_Page/LandingPage.png",
