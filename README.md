@@ -2,11 +2,11 @@
 This project is a graphical simulation designed for the GRA163 Group 3. It provides a user-friendly interface to simulate and calculate projectile trajectories and target hits using given parameters.
 
 # Project Structure 💻
-GUI: Contains the configuration and image assets for the GUI.
+- GUI:Contains the configuration and image assets for the GUI.
 
-Function: Contains the necessary functions for projectile and trajectory calculations.
+- Function: Contains the necessary functions for projectile and trajectory calculations.
 
-Simulation Calculation: Contains configuration and simulation data files.
+- Simulation Calculation: Contains configuration and simulation data files.
 
 # Installation ⬇️
 Download all Require Module First!
@@ -15,11 +15,12 @@ Download all Require Module First!
 ```
 
 # Configuration 😁
-## GUI Configuration 📊
-You can find this file  in ``GUI\config.json``
-You can change the area of buttons, text_areas, and text_boxes using ``GUI\FindCoordinateOnButton.py``
+### GUI Configuration 📊
+The configuration file can be found at ``GUI/config.json``.
+You may adjust the coordinates of buttons, text areas, and text boxes using the script ``GUI/FindCoordinateOnFrame.py.``
 
-For each GUI page, you can add below.
+For each GUI page, the configuration can be specified as follows:
+
 ```json
 {
     "buttons": {
@@ -52,8 +53,9 @@ For each GUI page, you can add below.
     }
 }
 ```
-## Luncher and Feild Configuration 🎯
-You can find this file  in ``Simulation Calculation\config.json`` (every unit is SI unit such as meter, degree, or meter per second square)
+
+### Luncher and Feild Configuration 🎯
+The configuration file can be found at ``Simulation Calculation/config.json``. The units are specified in meters, meters per second, and degrees.
 ```json
 {
     "luncher_parameters": {
@@ -79,6 +81,26 @@ You can find this file  in ``Simulation Calculation\config.json`` (every unit is
         "squash_ball_diameter": 0.04
     }
 }
+```
+
+# How to use! ❓
+### Step 1: Find Coordinates on Frame
+Navigate to ``GUI/FindCoordinateOnFrame.py``. Paste your image path and then run the program. Click on the pop-up screen to see the coordinates.
+
+```python
+# Load your image
+image = Image.open("YOUR PATH")  # Make sure to provide the correct path here
+```
+
+### Step 2: Configure Coordinates
+Go to ``GUI/config.json`` and set the coordinates for each element such as buttons, text areas, or text boxes. The format is ``"coords": [X1, Y1, X2, Y2], `` representing the top-left and bottom-right coordinates.
+
+### Step 3: Set Simulation Parameters
+Go to Simulation ``Calculation/config.json`` and set each parameter based on your settings.
+
+### Step 4: Run the GUI
+```python
+python GUI\GUI.py
 ```
 
 # Feedback 📞
